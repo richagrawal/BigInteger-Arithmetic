@@ -90,30 +90,22 @@ public class Num  implements Comparable<Num> {
     public static Num subtract(Num a, Num b) {
     	long gt[] = null;
     	long lt[] = null;
-    	if(a.arr.length > b.arr.length){
+    	
+    	int comp = a.compareTo(b);
+    	
+    	if(comp == 1){
     		gt = a.arr;
     		lt = b.arr;
     	}
-    	else if(a.arr.length < b.arr.length){
+    	else if(comp == -1){
     		gt = b.arr;
     		lt = a.arr;
     	}
     	else
     	{
-    		long diff = 0;
-    		int i = a.arr.length-1;
-    		while(i>=0 && diff==0){
-    			diff = a.arr[i] - b.arr[i];
-    			if(diff>0){
-    				gt = a.arr;
-    	    		lt = b.arr;
-    			}
-    			else if(diff<0){
-    				gt = b.arr;
-    	    		lt = a.arr;
-    			}
-    			i--;
-    		}
+    		Num z = new Num();
+        	z.arr = new long[]{0};
+        	return z;
     	}
     	Num z = new Num();
     	z.arr = new long[gt.length];
@@ -128,11 +120,27 @@ public class Num  implements Comparable<Num> {
     	for(int j=i+1;j<gt.length;j++)
     		z.arr[j] = gt[j];
     	
-	return z;
+    	return z;
     }
 
     public static Num product(Num a, Num b) {
-	return null;
+    	Num z = new Num();
+    	z.arr = new long[a.arr.length + b.arr.length];
+    	int carry = 0;
+    	long val = 0;
+    	for(int i = 0; i<a.arr.length; i++){
+    		for(int j = 0; j<b.arr.length; j++){
+    			val =z.arr[j+i]+ (a.arr[i] * b.arr[j])+carry;
+    			if(val>=Num.defaultBase){
+        			carry = (int) (val/Num.defaultBase);
+        			val = val%Num.defaultBase;
+        		}
+        		else
+        			carry = 0;
+    			z.arr[j+i] = val;
+    		}
+    	}
+    	return z;
     }
 
     // Use divide and conquer
@@ -142,6 +150,24 @@ public class Num  implements Comparable<Num> {
 
     // Use binary search to calculate a/b
     public static Num divide(Num a, Num b) {
+    	Num z = new Num();
+    	int comp = a.compareTo(b);
+    	Long h = Long.MAX_VALUE;
+    	long gt[] = null;
+    	long lt[] = null;
+    	if(comp == 1){
+    		gt = a.arr;
+    		lt = b.arr;
+    	}
+    	else if(comp == -1){
+    		gt = b.arr;
+    		lt = a.arr;
+    	}
+    	else{
+    		Num z = new Num();
+        	z.arr = new long[]{1};
+        	return z;
+    	}
 	return null;
     }
 
@@ -159,7 +185,28 @@ public class Num  implements Comparable<Num> {
     // Utility functions
     // compare "this" to "other": return +1 if this is greater, 0 if equal, -1 otherwise
     public int compareTo(Num other) {
-	return 0;
+    	if(this.arr.length > other.arr.length){
+    		return 1;
+    	}
+    	else if(this.arr.length < other.arr.length){
+    		return -1;
+    	}
+    	else
+    	{
+    		long diff = 0;
+    		int i = this.arr.length-1;
+    		while(i>=0 && diff==0){
+    			diff = this.arr[i] - other.arr[i];
+    			if(diff>0){
+    				return 1;
+    			}
+    			else if(diff<0){
+    				return -1;
+    			}
+    			i--;
+    		}
+    		return 0;
+    	}
     }
     
     // Output using the format "base: elements of list ..."
@@ -214,7 +261,7 @@ public class Num  implements Comparable<Num> {
 
 
     public static void main(String[] args) {
-	Num x = new Num(478);
+	Num x = new Num(4);
 	x.convertBase((int)Num.defaultBase);
 	x.printList();
 	Num y = new Num("4677");
@@ -223,6 +270,8 @@ public class Num  implements Comparable<Num> {
 	z.printList();
 	Num s = Num.subtract(x, y);
 	s.printList();
+	Num p = Num.product(x, y);
+	p.printList();
 	/*Num a = Num.power(x, 8);
 	System.out.println(a);
 	if(z != null) z.printList();*/

@@ -24,7 +24,7 @@ public class Num  implements Comparable<Num> {
     		b=b/10;
     		pow++;
     	}
-    	this.arr = new long[(s.length()/pow)+1];
+    	this.arr = new long[(i/pow)+1];
     	while(i>=pow){
     		this.arr[k] = Long.parseLong(s.substring(i-pow,i));
     		i = i-pow;
@@ -43,6 +43,7 @@ public class Num  implements Comparable<Num> {
     	}
     	this.arr = new long[(int) (((d+1)/Math.log10(base))+1)];
     	this.arr[0] = x;
+    	this.convertBase((int) this.base);
     }
 
     public Num() {
@@ -63,7 +64,7 @@ public class Num  implements Comparable<Num> {
     		lenMin = a.arr.length;
     	}
     	Num z = new Num();
-    	z.arr = new long[lenMax];
+    	z.arr = new long[lenMax+1];
     	int i,carry=0;
     	for(i = 0;i<lenMin;i++){
     		z.arr[i] = a.arr[i] + b.arr[i] + carry;
@@ -75,7 +76,7 @@ public class Num  implements Comparable<Num> {
     			carry = 0;
     	}
     	
-    	for(int j = i+1;j<lenMax;j++){
+    	for(int j = i;j<lenMax;j++){
     		z.arr[j] = max[j] + carry;
     		if(z.arr[i]>=Num.defaultBase){
     			carry = (int) (z.arr[i]/Num.defaultBase);
@@ -150,25 +151,40 @@ public class Num  implements Comparable<Num> {
 
     // Use binary search to calculate a/b
     public static Num divide(Num a, Num b) {
-    	Num z = new Num();
     	int comp = a.compareTo(b);
-    	Long h = Long.MAX_VALUE;
-    	long gt[] = null;
-    	long lt[] = null;
+    	Num gt = null;
+    	Num lt = null;
     	if(comp == 1){
-    		gt = a.arr;
-    		lt = b.arr;
+    		gt = a;
+    		lt = b;
     	}
     	else if(comp == -1){
-    		gt = b.arr;
-    		lt = a.arr;
+    		gt = b;
+    		lt = a;
     	}
     	else{
     		Num z = new Num();
         	z.arr = new long[]{1};
         	return z;
     	}
-	return null;
+    	Num z = new Num();
+    	Num high = new Num(10000);
+    	Num low = new Num (0);
+    	Num mid = add(high, low).by2();
+    	Num prod = product(mid, lt);
+    	int prodComp = prod.compareTo(gt);
+    	while(prodComp!=0){
+    		if(prodComp==1)
+    			high = mid;
+    		else if(prodComp==-1)
+    			low = mid;
+    		else
+    			return mid;
+    		mid = (add(high, low)).by2();
+    		prod = product(mid, lt);
+    		prodComp = prod.compareTo(gt);
+    	}
+	return mid;
     }
 
     // return a%b
@@ -185,28 +201,45 @@ public class Num  implements Comparable<Num> {
     // Utility functions
     // compare "this" to "other": return +1 if this is greater, 0 if equal, -1 otherwise
     public int compareTo(Num other) {
+    	int i = this.arr.length-1;
     	if(this.arr.length > other.arr.length){
-    		return 1;
-    	}
-    	else if(this.arr.length < other.arr.length){
-    		return -1;
-    	}
-    	else
-    	{
-    		long diff = 0;
-    		int i = this.arr.length-1;
-    		while(i>=0 && diff==0){
-    			diff = this.arr[i] - other.arr[i];
-    			if(diff>0){
+    		boolean nonZero = false;
+    		for(int j = other.arr.length;j<this.arr.length;j++){
+    			if(this.arr[j]!=0){
+    				nonZero = true;
     				return 1;
     			}
-    			else if(diff<0){
+    		}
+    		if(!nonZero){
+    			i = other.arr.length-1;
+    		}
+    	}
+    	else if(this.arr.length < other.arr.length){
+    		boolean nonZero = false;
+    		for(int j = this.arr.length;j<other.arr.length;j++){
+    			if(other.arr[j]!=0){
+    				nonZero = true;
     				return -1;
     			}
-    			i--;
     		}
-    		return 0;
+    		if(!nonZero){
+    			i = this.arr.length-1;
+    		}
     	}
+    	
+		long diff = 0;
+		while(i>=0){
+			diff = this.arr[i] - other.arr[i];
+			if(diff>0){
+				return 1;
+			}
+			else if(diff<0){
+				return -1;
+			}
+			i--;
+		}
+		
+		return 0;
     }
     
     // Output using the format "base: elements of list ..."
@@ -242,7 +275,19 @@ public class Num  implements Comparable<Num> {
 
     // Divide by 2, for using in binary search
     public Num by2() {
-	return null;
+    	int i=this.arr.length-1;
+    	long v = 0,rem = 0;
+    	Num z = new Num();
+    	z.arr = new long[this.arr.length];
+    	while(i>=0){
+    		v = this.arr[i];
+    		if(rem == 1)
+    			v = base + v;
+    		z.arr[i] = v/2;
+    		rem = v%2;
+    		i--;
+    	}
+	return z;
     }
 
     // Evaluate an expression in postfix and return resulting number
@@ -262,16 +307,20 @@ public class Num  implements Comparable<Num> {
 
     public static void main(String[] args) {
 	Num x = new Num(4);
-	x.convertBase((int)Num.defaultBase);
 	x.printList();
-	Num y = new Num("4677");
+	Num y = new Num("4000");
 	y.printList();
-	Num z = Num.add(x, y);
+	/*Num z = Num.add(x, y);
 	z.printList();
 	Num s = Num.subtract(x, y);
 	s.printList();
 	Num p = Num.product(x, y);
-	p.printList();
+	p.printList();*/
+	Num d = Num.divide(x, y);
+	d.printList();
+	/*System.out.println("by 2:");
+	Num b = y.by2();
+	b.printList();*/
 	/*Num a = Num.power(x, 8);
 	System.out.println(a);
 	if(z != null) z.printList();*/

@@ -20,8 +20,8 @@ public class Num  implements Comparable<Num> {
     int len;  // actual number of elements of array that are used;  number is stored in arr[0..len-1]
 
 	public void setNumLen(){
-		for(int i=arr.length-1;i>=0;i--){
-			if(arr[i] > 0){
+		for(int i=this.arr.length-1;i>=0;i--){
+			if(this.arr[i] > 0){
 				this.len = i;
 				break;
 			}
@@ -447,7 +447,7 @@ public class Num  implements Comparable<Num> {
 	Num y = new Num(2000);
 	y.printList();
 	Num add = Num.product(x,y);
-	System.out.println(add.len);
+//	System.out.println(add.len);
 //	add = Num.add(add,x);
 	add.printList();
 

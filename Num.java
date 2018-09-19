@@ -206,12 +206,43 @@ public class Num  implements Comparable<Num> {
 
     // return a%b
     public static Num mod(Num a, Num b) {
-	return null;
+    	Num remainder = new Num();
+    	int comp = a.compareTo(b);
+    	Num gt = null;
+    	Num lt = null;
+    	if(comp == 1){
+    		gt = a;
+    		lt = b;
+    	}
+    	else if(comp == -1){
+    		gt = b;
+    		lt = a;
+    	} 
+    	remainder = subtract(gt, product(divide(gt, lt), lt));
+	return remainder;
     }
 
     // Use binary search
     public static Num squareRoot(Num a) {
-	return null;
+    	Num high = a.by2();
+    	Num low = new Num (0);
+    	Num mid = add(high, low).by2();
+		Num squarednumber = power(mid, 2);
+		int compare = squarednumber.compareTo(a);
+		while(compare != 0){
+				if(compare > 1){
+					high = mid;
+				}
+				else if(compare < 1){
+					low = mid;
+				}
+				else
+					return mid;
+				mid = add(high, low).by2();
+				squarednumber = power(mid, 2);
+				compare = squarednumber.compareTo(a);
+			}
+	return mid;
     }
 
 

@@ -3,7 +3,7 @@
 // Version 1.0 (8:00 PM, Wed, Sep 5).
 
 // Change following line to your NetId
-package RXA170033;
+package LongProject;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,8 +19,23 @@ public class Num  implements Comparable<Num> {
     boolean isNegative;  // boolean flag to represent negative numbers
     int len;  // actual number of elements of array that are used;  number is stored in arr[0..len-1]
 
+	public void setNumLen(){
+		for(int i=arr.length-1;i>=0;i--){
+			if(arr[i] > 0){
+				this.len = i;
+				break;
+			}
+		}
+	}
+
     public Num(String s) {
+    	this.isNegative = s.charAt(0) == '-';
+    	if(this.isNegative){
+    		s = s.substring(1);
+    		System.out.println("this is negetive "+s.length());
+		}
     	int i = s.length();
+		System.out.println("this is negetive "+s.length());
     	long b = base;
     	int pow=0;
     	int k = 0;
@@ -30,15 +45,22 @@ public class Num  implements Comparable<Num> {
     	}
     	this.arr = new long[(i/pow)+1];
     	while(i>=pow){
-    		this.arr[k] = Long.parseLong(s.substring(i-pow,i));
-    		i = i-pow;
+			this.arr[k] = Long.parseLong(s.substring(i-pow,i));
+			System.out.println("this is check "+i+" "+arr[k]);
+			i = i-pow;
     		k++;
     	}
     	if (i>0)
     		this.arr[k] = Long.parseLong(s.substring(0, i));
+
+
     }
 
     public Num(long x) {
+		this.isNegative = x<0;
+		if(this.isNegative){
+			x = Math.abs(x);
+		}
     	int d = 0;
     	long x1 = x;
     	while(x1>0){
@@ -89,6 +111,7 @@ public class Num  implements Comparable<Num> {
     		else
     			carry = 0;
     	}
+		z.setNumLen();
 	return z;
     }
 
@@ -125,8 +148,8 @@ public class Num  implements Comparable<Num> {
     	}
     	for(int j=i+1;j<gt.length;j++)
     		z.arr[j] = gt[j];
-    	
-    	return z;
+		z.setNumLen();
+		return z;
     }
 
     public static Num product(Num a, Num b) {
@@ -146,6 +169,7 @@ public class Num  implements Comparable<Num> {
     			z.arr[j+i] = val;
     		}
     	}
+		z.setNumLen();
     	return z;
     }
 
@@ -201,6 +225,7 @@ public class Num  implements Comparable<Num> {
     		prod = product(mid, lt);
     		prodComp = prod.compareTo(gt);
     	}
+		mid.setNumLen();
 	return mid;
     }
 
@@ -219,6 +244,7 @@ public class Num  implements Comparable<Num> {
     		lt = a;
     	} 
     	remainder = subtract(gt, product(divide(gt, lt), lt));
+    	remainder.setNumLen();
 	return remainder;
     }
 
@@ -242,6 +268,7 @@ public class Num  implements Comparable<Num> {
 				squarednumber = power(mid, 2);
 				compare = squarednumber.compareTo(a);
 			}
+			mid.setNumLen();
 	return mid;
     }
 
@@ -320,6 +347,7 @@ public class Num  implements Comparable<Num> {
     		i++;
     		x = x/newBase;
     	}
+    	this.setNumLen();
     	return this;
     }
 
@@ -337,6 +365,7 @@ public class Num  implements Comparable<Num> {
     		rem = v%2;
     		i--;
     	}
+    	z.setNumLen();
 	return z;
     }
 
@@ -412,11 +441,16 @@ public class Num  implements Comparable<Num> {
 
 
     public static void main(String[] args) {
-	Num x = new Num(4000);
+	Num x = new Num("4000");
 	x.printList();
-	//Num y = new Num("4000");
+//	Num y = new Num("4000");
 	Num y = new Num(2000);
 	y.printList();
+	Num add = Num.product(x,y);
+	System.out.println(add.len);
+//	add = Num.add(add,x);
+	add.printList();
+
 	/*Num z = Num.add(x, y);
 	z.printList();*/
 	/*Num s = Num.subtract(x, y);
@@ -432,8 +466,8 @@ public class Num  implements Comparable<Num> {
 	b.printList();*/
 	/*Num a = Num.power(x, 6);
 	a.printList();*/
-	String str[] = {"2","3","1","*","+","9","-"};
-	Num pf = evaluatePostfix(str);
-	pf.printList();
+//	String str[] = {"2","3","1","*","+","9","-"};
+//	Num pf = evaluatePostfix(str);
+//	pf.printList();
     }
 }

@@ -6,6 +6,10 @@
 package RXA170033;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
 
 public class Num  implements Comparable<Num> {
 
@@ -91,6 +95,7 @@ public class Num  implements Comparable<Num> {
     public static Num subtract(Num a, Num b) {
     	long gt[] = null;
     	long lt[] = null;
+    	Num z = new Num();
     	
     	int comp = a.compareTo(b);
     	
@@ -101,14 +106,14 @@ public class Num  implements Comparable<Num> {
     	else if(comp == -1){
     		gt = b.arr;
     		lt = a.arr;
+    		z.isNegative = true;
     	}
     	else
     	{
-    		Num z = new Num();
-        	z.arr = new long[]{0};
+        	z = new Num((long)0);
         	return z;
     	}
-    	Num z = new Num();
+    	
     	z.arr = new long[gt.length];
     	int i;
     	for(i=0;i<lt.length;i++){
@@ -146,7 +151,19 @@ public class Num  implements Comparable<Num> {
 
     // Use divide and conquer
     public static Num power(Num a, long n) {
-	return null;
+    	
+    	Num temp = null;
+    	
+    	if(n == 0){
+    		temp = new Num((long)1);
+    		return temp;
+    	}
+    	temp = power(a, n/2);
+    	if(n%2==0)
+    		return product(temp, temp);
+    	else
+    		return product(product (temp,temp),a);
+    	
     }
 
     // Use binary search to calculate a/b
@@ -247,6 +264,8 @@ public class Num  implements Comparable<Num> {
     // then the output is "100: 65 9 1"
     public void printList() {
     	System.out.print(this.base+":");
+    	if(this.isNegative)
+        	System.out.print(" -");
     	for(long numDigit : this.arr){
     		System.out.print(" "+numDigit);
     	}
@@ -294,35 +313,96 @@ public class Num  implements Comparable<Num> {
     // Each string is one of: "*", "+", "-", "/", "%", "^", "0", or
     // a number: [1-9][0-9]*.  There is no unary minus operator.
     public static Num evaluatePostfix(String[] expr) {
-	return null;
+    	Stack<Num> st = new Stack<Num>();
+    	
+    	HashSet<String> optr = new HashSet<String>();
+    	optr.add("^");
+    	optr.add("*");
+    	optr.add("/");
+    	optr.add("%");
+    	optr.add("+");
+    	optr.add("-");
+    	
+    	for(int i = 0; i<expr.length; i++){
+    		if(!optr.contains(expr[i]))
+    			st.push(new Num(expr[i]));
+    		else{
+    			st.push(eval(st.pop(),st.pop(),expr[i]));
+    		}
+    	}
+    	
+    	return st.pop();
+    }
+    
+    public static Num eval(Num a, Num b, String x){
+    	Num z = null;
+    	switch(x){
+	    	case "+" : z = add(a,b);
+	    		break;
+	    	case "-" : z = subtract(a, b);
+	    		break;
+	    	case "*" : z = product(a, b);
+	    		break;
+	    	case "/" : z = divide(a, b);
+	    		break;
+	    	case "%" : z = mod(a, b);
+	    		break;
+    	}
+    	return z;
     }
 
     // Evaluate an expression in infix and return resulting number
     // Each string is one of: "*", "+", "-", "/", "%", "^", "(", ")", "0", or
     // a number: [1-9][0-9]*.  There is no unary minus operator.
     public static Num evaluateInfix(String[] expr) {
+    	/*Stack<Num> opnd = new Stack<Num>();
+    	Stack<String> optr = new Stack<String>();
+    	
+    	HashMap<String,Integer> precedenceMap = new HashMap<String,Integer>();
+    	
+    	precedenceMap.put("^", 3);
+    	precedenceMap.put("*", 2);
+    	precedenceMap.put("/", 2);
+    	precedenceMap.put("%", 2);
+    	precedenceMap.put("+", 1);
+    	precedenceMap.put("-", 1);
+    	precedenceMap.put("$", 0);
+    	
+    	for(int i = 0;i<expr.length;i++){
+    		if(precedenceMap.containsKey(expr[i])){
+    			optr.push(expr[i]);
+    		}
+    		else
+    			opnd.push(expr[i]);
+    	}*/
+    	
 	return null;
     }
 
 
     public static void main(String[] args) {
-	Num x = new Num(4);
+	Num x = new Num(4000);
 	x.printList();
-	Num y = new Num("4000");
+	//Num y = new Num("4000");
+	Num y = new Num(2000);
 	y.printList();
 	/*Num z = Num.add(x, y);
-	z.printList();
-	Num s = Num.subtract(x, y);
-	s.printList();
-	Num p = Num.product(x, y);
+	z.printList();*/
+	/*Num s = Num.subtract(x, y);
+	s.printList();*/
+	/*x.arr = new long[]{14};
+	y.arr = new long[]{12};*/
+	/*Num p = Num.product(x, y);
 	p.printList();*/
-	Num d = Num.divide(x, y);
-	d.printList();
+	/*Num d = Num.divide(x, y);
+	d.printList();*/
 	/*System.out.println("by 2:");
 	Num b = y.by2();
 	b.printList();*/
-	/*Num a = Num.power(x, 8);
-	System.out.println(a);
-	if(z != null) z.printList();*/
+	/*Num a = Num.power(x, 6);
+	a.printList();*/
+	String str[] = {"2","3","1","*","+","9","-"};
+	Num pf = evaluatePostfix(str);
+	pf.printList();
     }
 }

@@ -19,6 +19,15 @@ public class Num  implements Comparable<Num> {
     boolean isNegative;  // boolean flag to represent negative numbers
     int len;  // actual number of elements of array that are used;  number is stored in arr[0..len-1]
 
+	public void setNumLen(){
+		for(int i=arr.length-1;i>=0;i--){
+			if(arr[i] > 0){
+				this.len = i;
+				break;
+			}
+		}
+	}
+
     public Num(String s) {
     	this.isNegative = s.charAt(0) == '-';
     	if(this.isNegative){
@@ -43,6 +52,8 @@ public class Num  implements Comparable<Num> {
     	}
     	if (i>0)
     		this.arr[k] = Long.parseLong(s.substring(0, i));
+
+
     }
 
     public Num(long x) {
@@ -100,6 +111,7 @@ public class Num  implements Comparable<Num> {
     		else
     			carry = 0;
     	}
+		z.setNumLen();
 	return z;
     }
 
@@ -136,8 +148,8 @@ public class Num  implements Comparable<Num> {
     	}
     	for(int j=i+1;j<gt.length;j++)
     		z.arr[j] = gt[j];
-    	
-    	return z;
+		z.setNumLen();
+		return z;
     }
 
     public static Num product(Num a, Num b) {
@@ -157,6 +169,7 @@ public class Num  implements Comparable<Num> {
     			z.arr[j+i] = val;
     		}
     	}
+		z.setNumLen();
     	return z;
     }
 
@@ -212,6 +225,7 @@ public class Num  implements Comparable<Num> {
     		prod = product(mid, lt);
     		prodComp = prod.compareTo(gt);
     	}
+		mid.setNumLen();
 	return mid;
     }
 
@@ -230,6 +244,7 @@ public class Num  implements Comparable<Num> {
     		lt = a;
     	} 
     	remainder = subtract(gt, product(divide(gt, lt), lt));
+    	remainder.setNumLen();
 	return remainder;
     }
 
@@ -253,6 +268,7 @@ public class Num  implements Comparable<Num> {
 				squarednumber = power(mid, 2);
 				compare = squarednumber.compareTo(a);
 			}
+			mid.setNumLen();
 	return mid;
     }
 
@@ -331,6 +347,7 @@ public class Num  implements Comparable<Num> {
     		i++;
     		x = x/newBase;
     	}
+    	this.setNumLen();
     	return this;
     }
 
@@ -348,6 +365,7 @@ public class Num  implements Comparable<Num> {
     		rem = v%2;
     		i--;
     	}
+    	z.setNumLen();
 	return z;
     }
 
@@ -428,7 +446,8 @@ public class Num  implements Comparable<Num> {
 //	Num y = new Num("4000");
 	Num y = new Num(2000);
 	y.printList();
-	Num add = Num.add(x,y);
+	Num add = Num.product(x,y);
+	System.out.println(add.len);
 //	add = Num.add(add,x);
 	add.printList();
 

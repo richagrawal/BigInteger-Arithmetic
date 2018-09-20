@@ -3,12 +3,9 @@
 // Version 1.0 (8:00 PM, Wed, Sep 5).
 
 // Change following line to your NetId
-package LongProject;
+package RXA170033;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Stack;
 
 public class Num  implements Comparable<Num> {
@@ -125,16 +122,57 @@ public class Num  implements Comparable<Num> {
     	if(comp == 1){
     		gt = a.arr;
     		lt = b.arr;
+    		
+    		if(!a.isNegative && b.isNegative){
+    			z = add(a, b);
+    			z.setNumLen();
+    			return z;
+    		}
+    		else if(a.isNegative && !b.isNegative){
+    			z = add(a,b);
+    			z.isNegative = true;
+    			z.setNumLen();
+    			return z;
+    		}
+    		else if(a.isNegative && b.isNegative)
+    			z.isNegative = true;
+    		
     	}
     	else if(comp == -1){
     		gt = b.arr;
     		lt = a.arr;
-    		z.isNegative = true;
+    		if(!a.isNegative && !b.isNegative)
+    			z.isNegative = true;
+    		else if(!a.isNegative && b.isNegative){
+    			z = add(a,b);
+    			z.setNumLen();
+    			return z;
+    		}
+    		else if(a.isNegative && !b.isNegative){
+    			z = add(a,b);
+    			z.isNegative = true;
+    			z.setNumLen();
+    			return z;
+    		}
     	}
     	else
     	{
-        	z = new Num((long)0);
-        	return z;
+    		if((!a.isNegative && !b.isNegative) ||(a.isNegative && b.isNegative)){
+	        	z = new Num((long)0);
+	        	z.setNumLen();
+	        	return z;
+    		}
+    		else if(!a.isNegative && b.isNegative){
+    			z = add(a,b);
+    			z.setNumLen();
+    			return z;
+    		}
+    		else if(a.isNegative && !b.isNegative){
+    			z = add(a,b);
+    			z.isNegative = true;
+    			z.setNumLen();
+    			return z;
+    		}
     	}
     	
     	z.arr = new long[gt.length];
@@ -177,9 +215,19 @@ public class Num  implements Comparable<Num> {
     public static Num power(Num a, long n) {
     	
     	Num temp = null;
+    	boolean negResult = false;
+    	if(n<0){
+    		temp = new Num((long)0);
+    		return temp;
+    	}
+    	
+    	if(a.isNegative && n%2!=0)
+    		negResult = true;
     	
     	if(n == 0){
     		temp = new Num((long)1);
+    		if(negResult)
+    			temp.isNegative = true;
     		return temp;
     	}
     	temp = power(a, n/2);
@@ -324,9 +372,8 @@ public class Num  implements Comparable<Num> {
     	System.out.print(this.base+":");
     	if(this.isNegative)
         	System.out.print(" -");
-    	for(long numDigit : this.arr){
-    		System.out.print(" "+numDigit);
-    	}
+    	for(int i = 0; i<=this.len;i++)
+    		System.out.print(" "+this.arr[i]);
     	System.out.println("");
     }
     
@@ -441,20 +488,20 @@ public class Num  implements Comparable<Num> {
 
 
     public static void main(String[] args) {
-	Num x = new Num("4000");
+	Num x = new Num(-200);
 	x.printList();
 //	Num y = new Num("4000");
-	Num y = new Num(2000);
+	Num y = new Num(10965);
 	y.printList();
-	Num add = Num.product(x,y);
+	/*Num add = Num.product(x,y);
 	System.out.println(add.len);
 //	add = Num.add(add,x);
-	add.printList();
+	add.printList();*/
 
 	/*Num z = Num.add(x, y);
 	z.printList();*/
-	/*Num s = Num.subtract(x, y);
-	s.printList();*/
+	Num s = Num.subtract(x, y);
+	s.printList();
 	/*x.arr = new long[]{14};
 	y.arr = new long[]{12};*/
 	/*Num p = Num.product(x, y);
@@ -464,7 +511,7 @@ public class Num  implements Comparable<Num> {
 	/*System.out.println("by 2:");
 	Num b = y.by2();
 	b.printList();*/
-	/*Num a = Num.power(x, 6);
+	/*Num a = Num.power(x, 5);
 	a.printList();*/
 //	String str[] = {"2","3","1","*","+","9","-"};
 //	Num pf = evaluatePostfix(str);

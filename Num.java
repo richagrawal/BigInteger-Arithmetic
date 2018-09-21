@@ -119,59 +119,35 @@ public class Num  implements Comparable<Num> {
     	
     	int comp = a.compareTo(b);
     	
+    	if((a.isNegative && !b.isNegative )||( !a.isNegative && b.isNegative)){
+    		z = add(a, b);
+    		if(a.isNegative && !b.isNegative)
+    			z.isNegative = true;
+    		z.setNumLen();
+    		return z;
+    	}
+    	
     	if(comp == 1){
     		gt = a.arr;
     		lt = b.arr;
     		
-    		if(!a.isNegative && b.isNegative){
-    			z = add(a, b);
-    			z.setNumLen();
-    			return z;
-    		}
-    		else if(a.isNegative && !b.isNegative){
-    			z = add(a,b);
+    		if(a.isNegative && b.isNegative)
     			z.isNegative = true;
-    			z.setNumLen();
-    			return z;
-    		}
-    		else if(a.isNegative && b.isNegative)
-    			z.isNegative = true;
-    		
     	}
+    	
     	else if(comp == -1){
     		gt = b.arr;
     		lt = a.arr;
     		if(!a.isNegative && !b.isNegative)
     			z.isNegative = true;
-    		else if(!a.isNegative && b.isNegative){
-    			z = add(a,b);
-    			z.setNumLen();
-    			return z;
-    		}
-    		else if(a.isNegative && !b.isNegative){
-    			z = add(a,b);
-    			z.isNegative = true;
-    			z.setNumLen();
-    			return z;
-    		}
     	}
+    	
     	else
     	{
     		if((!a.isNegative && !b.isNegative) ||(a.isNegative && b.isNegative)){
 	        	z = new Num((long)0);
 	        	z.setNumLen();
 	        	return z;
-    		}
-    		else if(!a.isNegative && b.isNegative){
-    			z = add(a,b);
-    			z.setNumLen();
-    			return z;
-    		}
-    		else if(a.isNegative && !b.isNegative){
-    			z = add(a,b);
-    			z.isNegative = true;
-    			z.setNumLen();
-    			return z;
     		}
     	}
     	
@@ -491,7 +467,7 @@ public class Num  implements Comparable<Num> {
 	Num x = new Num(-200);
 	x.printList();
 //	Num y = new Num("4000");
-	Num y = new Num(10965);
+	Num y = new Num(800);
 	y.printList();
 	/*Num add = Num.product(x,y);
 	System.out.println(add.len);

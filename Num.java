@@ -1,10 +1,10 @@
-
 // Starter code for lp1.
 // Version 1.0 (8:00 PM, Wed, Sep 5).
 
 // Change following line to your NetId
 package RXA170033;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
 
@@ -470,28 +470,49 @@ public class Num  implements Comparable<Num> {
     // Each string is one of: "*", "+", "-", "/", "%", "^", "(", ")", "0", or
     // a number: [1-9][0-9]*.  There is no unary minus operator.
     public static Num evaluateInfix(String[] expr) {
-    	/*Stack<Num> opnd = new Stack<Num>();
-    	Stack<String> optr = new Stack<String>();
+    	Num postfixsolution = new Num();
+    	String postfixstring = new String("");
+    	String[] postfixarrayoutput;
+    	HashMap<String, Integer> priority = new HashMap<String, Integer>();
+    	priority.put("+", 1);
+    	priority.put("-", 1);
+    	priority.put("/", 2);
+    	priority.put("*", 2);
+    	priority.put("^", 3);
     	
-    	HashMap<String,Integer> precedenceMap = new HashMap<String,Integer>();
+    	Stack<Character> stack = new Stack<>();
     	
-    	precedenceMap.put("^", 3);
-    	precedenceMap.put("*", 2);
-    	precedenceMap.put("/", 2);
-    	precedenceMap.put("%", 2);
-    	precedenceMap.put("+", 1);
-    	precedenceMap.put("-", 1);
-    	precedenceMap.put("$", 0);
-    	
-    	for(int i = 0;i<expr.length;i++){
-    		if(precedenceMap.containsKey(expr[i])){
-    			optr.push(expr[i]);
+    	for(int i = 0; i < expr.length; i++){
+    		String val = expr[i];
+    		char charval = val.charAt(0);
+    		if(Character.isLetter(charval))
+    		{
+    			postfixstring += charval;
     		}
-    		else
-    			opnd.push(expr[i]);
-    	}*/
+    		else if(charval == '('){
+    			stack.push(charval);
+    		}
+    		else if(charval == ')'){
+    			while(! stack.isEmpty() && stack.peek()!= '('){
+    				postfixstring += stack.pop();
+    			}
+    			stack.pop();
+    		}
+    		else 
+    		{
+    			while(!stack.isEmpty() && priority.get(charval) <= priority.get(stack.peek()) ){
+    				postfixstring += stack.pop();
+    			}
+    			stack.push(charval);
+    		}
+    	}
     	
-	return null;
+    	while(!stack.isEmpty()){
+    		postfixstring += stack.pop();
+    	}
+    	postfixarrayoutput = postfixstring.split("");
+    	postfixsolution = evaluatePostfix(postfixarrayoutput);
+	return postfixsolution;
     }
 
 

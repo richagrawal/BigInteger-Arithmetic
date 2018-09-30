@@ -1,59 +1,52 @@
-
 // Starter code for lp1.
 // Version 1.0 (8:00 PM, Wed, Sep 5).
 
 // Change following line to your NetId
 package LongProject;
 
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Stack;
 
 public class Num  implements Comparable<Num> {
 
-    static long defaultBase = 100;  // Change as needed
+    static long defaultBase = 1000000000;  // Change as needed
     long base = defaultBase;  // Change as needed
     long[] arr;  // array to store arbitrarily large integers
     boolean isNegative;  // boolean flag to represent negative numbers
     int len;  // actual number of elements of array that are used;  number is stored in arr[0..len-1]
+	static Comparator<Integer> cmp = Comparator.naturalOrder();
 
 	public void setNumLen(){
-		for(int i=this.arr.length-1;i>=0;i--){
-			if(this.arr[i] > 0){
-				this.len = i;
+		for(int i=arr.length-1;i>=0;i--){
+			if(arr[i] > 0){
+				this.len = i+1;
 				break;
 			}
 		}
+	}
+
+	public Num(){
+		//create object
 	}
 
     public Num(String s) {
     	this.isNegative = s.charAt(0) == '-';
     	if(this.isNegative){
     		s = s.substring(1);
-    		System.out.println("this is negetive "+s.length());
 		}
-    	int i = s.length();
-		System.out.println("this is negetive "+s.length());
-    	long b = base;
-    	int pow=0;
-    	int k = 0;
-    	while(b>1){
-    		b=b/10;
-    		pow++;
-    	}
-    	this.arr = new long[(i/pow)+1];
-    	while(i>=pow){
-			this.arr[k] = Long.parseLong(s.substring(i-pow,i));
-			System.out.println("this is check "+i+" "+arr[k]);
-			i = i-pow;
-    		k++;
-    	}
-    	if (i>0)
-    		this.arr[k] = Long.parseLong(s.substring(0, i));
-
-
+    	int digitLength = s.length();
+		this.base = 10;
+		int index = 0;
+		this.arr = new long[(int) (((digitLength+1)/Math.log10(this.base))+1)];
+		for(int i = digitLength-1;i>=0;i--){
+			this.arr[index++] = s.charAt(i)-'0';
+		}
+		Num tempConvertedBase = convertBase((int) defaultBase);
+		this.arr = tempConvertedBase.arr;
+		this.base = tempConvertedBase.base;
+		this.setNumLen();
     }
 
     public Num(long x) {
@@ -64,105 +57,228 @@ public class Num  implements Comparable<Num> {
     	int d = 0;
     	long x1 = x;
     	while(x1>0){
-    		x1 = x1/10;
+    		x1 = x1/defaultBase;
     		d++;
     	}
-    	this.arr = new long[(int) (((d+1)/Math.log10(base))+1)];
-    	this.arr[0] = x;
-    	this.convertBase((int) this.base);
+    	this.arr = new long[(int) (((d+1)/Math.log10(this.base))+1)];
+    	//added by richa st
+    	int i = 0;
+    	while(x>0){
+    		this.arr[i] = x%this.base;
+    		x = x/this.base;
+    		i++;
+    	}
+    	this.setNumLen();
+    	//this.convertBase((int) this.base);
     }
 
-    public Num() {
+    public static Num getSum(Num a,Num b,Num z) {
+		int lenMax ,lenMin;
+		long max[] = null;
+		max = (a.len > b.len)?a.arr:b.arr;
+		lenMax = (a.len > b.len)?a.len:b.len;
+		lenMin = (a.len > b.len)?b.len:a.len;
+
+		z.arr = new long[lenMax+1];
+		int i,carry=0;
+		for(i = 0;i<lenMin;i++){
+			z.arr[i] = a.arr[i] + b.arr[i] + carry;
+			if(z.arr[i]>=a.base){
+				carry = (int) (z.arr[i]/a.base);
+				z.arr[i] = z.arr[i]%a.base;
+			}
+			else
+				carry = 0;
+		}
+		for(int j = i;j<lenMax;j++){
+			z.arr[j] = max[j] + carry;
+			if(z.arr[i]>=a.base){
+				carry = (int) (z.arr[i]/a.base);
+				z.arr[i] = z.arr[i]%a.base;
+			}
+			else
+				carry = 0;
+		}
+		if(carry > 0){
+			z.arr[i++] = carry;
+			carry = 0;
+		}
+		z.setNumLen();
+
+		return z;
 	}
 
 	public static Num add(Num a, Num b) {
-    	
-    	int lenMax ,lenMin;
-    	long max[] = null;
-    	if(a.arr.length > b.arr.length){
-    		max = a.arr;
-    		lenMax = a.arr.length;
-    		lenMin = b.arr.length;
-    	}
-    	else{
-    		max = b.arr;
-    		lenMax = b.arr.length;
-    		lenMin = a.arr.length;
-    	}
-    	Num z = new Num();
-    	z.arr = new long[lenMax+1];
-    	int i,carry=0;
-    	for(i = 0;i<lenMin;i++){
-    		z.arr[i] = a.arr[i] + b.arr[i] + carry;
-    		if(z.arr[i]>=Num.defaultBase){
-    			carry = (int) (z.arr[i]/Num.defaultBase);
-    			z.arr[i] = z.arr[i]%Num.defaultBase;
-    		}
-    		else
-    			carry = 0;
-    	}
-    	
-    	for(int j = i;j<lenMax;j++){
-    		z.arr[j] = max[j] + carry;
-    		if(z.arr[i]>=Num.defaultBase){
-    			carry = (int) (z.arr[i]/Num.defaultBase);
-    			z.arr[i] = z.arr[i]%Num.defaultBase;
-    		}
-    		else
-    			carry = 0;
-    	}
-		z.setNumLen();
-	return z;
+		Num z = new Num();	//summ will be stored in this object
+		z.base = a.base;
+		if(a.isNegative && b.isNegative){
+			z.isNegative = true;
+			z = getSum(a,b,z);
+			return z;
+		}else if(!a.isNegative && !b.isNegative){
+			z.isNegative = false;
+			z = getSum(a,b,z);
+			return z;
+		}else if(!a.isNegative && b.isNegative){
+			int comp = a.compareTo(b);
+			System.out.println("here adding +ve and -ve "+comp);
+			if(comp == 1){
+				z.isNegative = false;
+				z = getDifference(a,b,z,a.arr,b.arr);
+				return z;
+			}else if(comp == 0){
+				z = new Num((long)0);
+				z.isNegative =  false;
+				z.setNumLen();
+				return z;
+			}else{
+				z.isNegative = true;
+				z = getDifference(a,b,z,b.arr,a.arr);
+				return z;
+			}
+		}else{
+			int comp = a.compareTo(b);
+			System.out.println("here adding -ve and +ve "+comp);
+			if(comp == 1){
+				z.isNegative = true;
+				z = getDifference(a,b,z,a.arr,b.arr);
+				return z;
+			}else if(comp == 0){
+				z = new Num((long)0);
+				z.isNegative =  false;
+				z.setNumLen();
+				return z;
+			}else{
+				z.isNegative = false;
+				z = getDifference(a,b,z,b.arr,a.arr);
+				return z;
+			}
+		}
     }
 
-    public static Num subtract(Num a, Num b) {
-    	long gt[] = null;
-    	long lt[] = null;
-    	Num z = new Num();
-    	
-    	int comp = a.compareTo(b);
-    	
-    	if(comp == 1){
-    		gt = a.arr;
-    		lt = b.arr;
-    	}
-    	else if(comp == -1){
-    		gt = b.arr;
-    		lt = a.arr;
-    		z.isNegative = true;
-    	}
-    	else
-    	{
-        	z = new Num((long)0);
-        	return z;
-    	}
-    	
-    	z.arr = new long[gt.length];
-    	int i;
-    	for(i=0;i<lt.length;i++){
-    		z.arr[i] = gt[i] - lt[i];
-    		if(z.arr[i]<0){
-    			z.arr[i]+= z.base;
-    			gt[i+1] = gt[i+1]-1;
-    		}
-    	}
-    	for(int j=i+1;j<gt.length;j++)
-    		z.arr[j] = gt[j];
+    public static Num getDifference(Num a,Num b,Num z,long[] gt,long[] lt){
+		z.arr = new long[gt.length];
+		int i;
+		for(i=0;i<lt.length;i++){
+			z.arr[i] = gt[i] - lt[i];
+			if(z.arr[i]<0){
+				z.arr[i]+= z.base;
+				gt[i+1] = gt[i+1]-1;
+			}
+		}
+		for(int j=i+1;j<gt.length;j++)
+			z.arr[j] = gt[j];
 		z.setNumLen();
 		return z;
+	}
+
+    public static Num subtract(Num a, Num b) {
+    	Num z = new Num();
+		long gt[] = null;
+		long lt[] = null;
+		int comp = a.compareTo(b);
+		System.out.println("signs are "+a.isNegative+" "+b.isNegative+" and comp is "+comp);
+		//	(a-b)
+		if(!a.isNegative && !b.isNegative){
+			//if a and b are positive
+			if(comp == 1){
+				// a > b and hence difference is +ve
+				gt = a.arr;
+				lt = b.arr;
+				z.isNegative = false;
+			}else if(comp == 0){
+				System.out.println("here as they are same");
+				z = new Num((long)0);
+				z.isNegative =  false;
+				z.setNumLen();
+				return z;
+			}else{
+				// a < b and hence difference is -ve
+				gt = b.arr;
+				lt = a.arr;
+				z.isNegative = true;
+			}
+		}else if(a.isNegative && b.isNegative){
+			// both a and b are negative
+			if(comp == 1){
+				// |a| > |b| and hence difference is -ve
+				gt = a.arr;
+				lt = b.arr;
+				z.isNegative = true;
+			}else if(comp == 0){
+				System.out.println("here as they are same and -ve");
+				z = new Num((long)0);
+				z.setNumLen();
+				z.isNegative =  false;
+				return z;
+			}else{
+				// |a| < |b| and hence difference is +ve
+				gt = b.arr;
+				lt = a.arr;
+				z.isNegative = false;
+			}
+		}else if(a.isNegative && !b.isNegative){
+			// since a is -ve and b is +ve the difference is -ve. i.e -(|a|+|b|)
+			//irrespective of a > b or b > a
+			z.isNegative = true;
+			z = getSum(a,b,z);
+			return z;
+		}else{
+			// since a is +ve and b is -ve the difference is +ve. i.e (a+b)
+			//irrespective of a > b or b > a
+			System.out.println("here is the +ve and -ve case");
+			z.isNegative = false;
+			z = getSum(a,b,z);
+			return z;
+		}
+		z = getDifference(a,b,z,gt,lt);
+		return z;
+//		if(comp == 1){
+//			gt = a.arr;
+//			lt = b.arr;
+//
+//			//if both numbers are -ve then the resulting difference will have sign of greater of the two
+//			z.isNegative = (a.isNegative && b.isNegative);
+////			if(a.isNegative && b.isNegative)
+////				z.isNegative = true;
+//		}else if(comp == -1){
+//			gt = b.arr;
+//			lt = a.arr;
+//
+//
+//			if(!a.isNegative && !b.isNegative)
+//				z.isNegative = true;
+//		}else{
+//			if((!a.isNegative && !b.isNegative) ||(a.isNegative && b.isNegative)){
+//				z = new Num((long)0);
+//				z.setNumLen();
+//				return z;
+//			}
+//		}
+
+//		if((a.isNegative && !b.isNegative )||( !a.isNegative && b.isNegative)){
+//			z = add(a, b);
+//			if(a.isNegative && !b.isNegative)
+//				z.isNegative = true;
+//			z.setNumLen();
+//			return z;
+//		}
+
     }
 
     public static Num product(Num a, Num b) {
     	Num z = new Num();
+    	z.base = a.base;
     	z.arr = new long[a.arr.length + b.arr.length];
     	int carry = 0;
     	long val = 0;
+    	long bs = a.base;
     	for(int i = 0; i<a.arr.length; i++){
     		for(int j = 0; j<b.arr.length; j++){
     			val =z.arr[j+i]+ (a.arr[i] * b.arr[j])+carry;
-    			if(val>=Num.defaultBase){
-        			carry = (int) (val/Num.defaultBase);
-        			val = val%Num.defaultBase;
+    			if(val>=bs){
+        			carry = (int) (val/bs);
+        			val = val%bs;
         		}
         		else
         			carry = 0;
@@ -177,9 +293,19 @@ public class Num  implements Comparable<Num> {
     public static Num power(Num a, long n) {
     	
     	Num temp = null;
+    	boolean negResult = false;
+    	if(n<0){
+    		temp = new Num((long)0);
+    		return temp;
+    	}
+    	
+    	if(a.isNegative && n%2!=0)
+    		negResult = true;
     	
     	if(n == 0){
     		temp = new Num((long)1);
+    		if(negResult)
+    			temp.isNegative = true;
     		return temp;
     	}
     	temp = power(a, n/2);
@@ -321,36 +447,73 @@ public class Num  implements Comparable<Num> {
     // For example, if base=100, and the number stored corresponds to 10965,
     // then the output is "100: 65 9 1"
     public void printList() {
-    	System.out.print(this.base+":");
+		System.out.print(this.base+":");
     	if(this.isNegative)
         	System.out.print(" -");
-    	for(long numDigit : this.arr){
-    		System.out.print(" "+numDigit);
-    	}
+
+    	for(int i = 0; i<this.len;i++)
+    		System.out.print(" "+this.arr[i]);
     	System.out.println("");
     }
     
     // Return number to a string in base 10
     public String toString() {
-    	
-	return null;
+    	Num base10Num = this.convertBase(10);
+    	String str = "";
+    	if(this.isNegative){
+			str+="-";
+		}
+    	for(int i=base10Num.len-1; i>=0; i--){
+			str += base10Num.arr[i];
+		}
+		base10Num.len = str.length();
+    	if(str.length() == 0){
+			System.out.println(str.length());
+		}else{
+			System.out.println(str);
+		}
+    	return str;
     }
 
     public long base() { return base; }
 
-    // Return number equal to "this" number, in base=newBase
-    public Num convertBase(int newBase) {
-    	long x = this.arr[0];
+    public Num convertBase(int base){
+    	
+    	Num exbase = convertDigit(this.base,base);
+    	exbase.setNumLen();
+    	Num newNum = new Num(0);
+    	newNum.base = base;
+    	newNum.isNegative=this.isNegative;
+    	Num convDig = new Num();
+    	for(int i = this.arr.length-1; i>=0;i--){
+    		newNum = product(newNum, exbase);
+    		convDig = convertDigit(this.arr[i],base);
+    		newNum = add(newNum,convDig);
+    	}
+    	return newNum;
+    }
+    
+    public Num convertDigit(long oldbase,int newBase) {
+    	Num bs = new Num();
+    	int d = 0;
+    	bs.base = newBase;
+    	long x = oldbase;
+    	long x1 = x;
+    	while(x1>0){
+    		x1 = x1/10;
+    		d++;
+    	}
+    	bs.arr = new long[(int) (((d+1)/Math.log10(newBase))+1)];
     	int i = 0;
     	while(x>0){
-    		this.arr[i] = x%newBase;
+    		bs.arr[i] = x%newBase;
     		i++;
     		x = x/newBase;
     	}
-    	this.setNumLen();
-    	return this;
+    	bs.setNumLen();
+    	return bs;
     }
-
+    
     // Divide by 2, for using in binary search
     public Num by2() {
     	int i=this.arr.length-1;
@@ -415,59 +578,68 @@ public class Num  implements Comparable<Num> {
     // Each string is one of: "*", "+", "-", "/", "%", "^", "(", ")", "0", or
     // a number: [1-9][0-9]*.  There is no unary minus operator.
     public static Num evaluateInfix(String[] expr) {
-    	/*Stack<Num> opnd = new Stack<Num>();
-    	Stack<String> optr = new Stack<String>();
+    	Num postfixsolution = new Num();
+    	String postfixstring = new String("");
+    	String[] postfixarrayoutput;
+    	HashMap<String, Integer> priority = new HashMap<String, Integer>();
+    	priority.put("+", 1);
+    	priority.put("-", 1);
+    	priority.put("/", 2);
+    	priority.put("*", 2);
+    	priority.put("^", 3);
     	
-    	HashMap<String,Integer> precedenceMap = new HashMap<String,Integer>();
+    	Stack<Character> stack = new Stack<>();
     	
-    	precedenceMap.put("^", 3);
-    	precedenceMap.put("*", 2);
-    	precedenceMap.put("/", 2);
-    	precedenceMap.put("%", 2);
-    	precedenceMap.put("+", 1);
-    	precedenceMap.put("-", 1);
-    	precedenceMap.put("$", 0);
-    	
-    	for(int i = 0;i<expr.length;i++){
-    		if(precedenceMap.containsKey(expr[i])){
-    			optr.push(expr[i]);
+    	for(int i = 0; i < expr.length; i++){
+    		String val = expr[i];
+    		char charval = val.charAt(0);
+    		if(Character.isLetter(charval))
+    		{
+    			postfixstring += charval;
     		}
-    		else
-    			opnd.push(expr[i]);
-    	}*/
+    		else if(charval == '('){
+    			stack.push(charval);
+    		}
+    		else if(charval == ')'){
+    			while(! stack.isEmpty() && stack.peek()!= '('){
+    				postfixstring += stack.pop();
+    			}
+    			stack.pop();
+    		}
+    		else 
+    		{
+    			while(!stack.isEmpty() && priority.get(charval) <= priority.get(stack.peek()) ){
+    				postfixstring += stack.pop();
+    			}
+    			stack.push(charval);
+    		}
+    	}
     	
-	return null;
+    	while(!stack.isEmpty()){
+    		postfixstring += stack.pop();
+    	}
+    	postfixarrayoutput = postfixstring.split("");
+    	postfixsolution = evaluatePostfix(postfixarrayoutput);
+	return postfixsolution;
     }
 
 
     public static void main(String[] args) {
-	Num x = new Num("4000");
-	x.printList();
-//	Num y = new Num("4000");
-	Num y = new Num(2000);
-	y.printList();
-	Num add = Num.product(x,y);
-//	System.out.println(add.len);
-//	add = Num.add(add,x);
-	add.printList();
+//	Num x = new Num("999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999");
+//	x.printList();
+//	Num y = new Num("222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222");
+//	y.printList();
+//	subtract(x,y).toString();
 
-	/*Num z = Num.add(x, y);
-	z.printList();*/
-	/*Num s = Num.subtract(x, y);
-	s.printList();*/
-	/*x.arr = new long[]{14};
-	y.arr = new long[]{12};*/
-	/*Num p = Num.product(x, y);
-	p.printList();*/
-	/*Num d = Num.divide(x, y);
-	d.printList();*/
-	/*System.out.println("by 2:");
-	Num b = y.by2();
-	b.printList();*/
-	/*Num a = Num.power(x, 6);
-	a.printList();*/
-//	String str[] = {"2","3","1","*","+","9","-"};
-//	Num pf = evaluatePostfix(str);
-//	pf.printList();
+		Num x = new Num("-999999999");
+		x.printList();
+		Num z = new Num("222222222");
+		z.printList();
+		add(x,z).toString();
+//	Num z1 = z.convertBase(10);
+//	System.out.println("Print tostring");
+//	z1.toString();
+//	System.out.println("Printlist");
+//	z1.printList();
     }
 }

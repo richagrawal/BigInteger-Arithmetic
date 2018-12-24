@@ -1,25 +1,41 @@
+
 // Starter code for lp1.
 // Version 1.0 (8:00 PM, Wed, Sep 5).
 
-// Change following line to your NetId
-package LongProject;
+package vxg180002;
 
-import java.util.Comparator;
+/**
+ * @authors
+ *
+ * RichaAgrawal (netId : rxa170033)
+ * Shruti Jaiswal (netId : sxj170027)
+ * Vikram Gopali (netId : vxg180002)
+ * Vishwanath D.C (netId : vxd180004)
+ * */
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
 
 public class Num  implements Comparable<Num> {
 
-    static long defaultBase = 1000000000;  // Change as needed
-    long base = defaultBase;  // Change as needed
+    static long defaultBase = 1000000000;  // Default base for all the operations
+    long base = defaultBase;  // base of the Num object that it is represented in
     long[] arr;  // array to store arbitrarily large integers
     boolean isNegative;  // boolean flag to represent negative numbers
     int len;  // actual number of elements of array that are used;  number is stored in arr[0..len-1]
-	static Comparator<Integer> cmp = Comparator.naturalOrder();
+	static int log10DefaultBase = 9; // log of defaultBase to the base 10 which is used for calculation purposes
 
-	public void setNumLen(){
-		for(int i=arr.length-1;i>=0;i--){
+
+	/**
+	 * This function sets the length of the array as to how much of the array
+	 * indices we have used. The array can be of size N but the first M blocks
+	 * where 0>=M<=N could only be used. This helps save time during looping.
+	 * */
+	private void setNumLen(){
+		for(int i = arr.length-1; i >= 0; i--){
+			if(arr[i]==0 && i==0)
+				this.len=1;
 			if(arr[i] > 0){
 				this.len = i+1;
 				break;
@@ -27,296 +43,281 @@ public class Num  implements Comparable<Num> {
 		}
 	}
 
-	public Num(){
-		//create object
-	}
-
-    public Num(String s) {
-    	this.isNegative = s.charAt(0) == '-';
-    	if(this.isNegative){
-    		s = s.substring(1);
-		}
-    	int digitLength = s.length();
-		this.base = 10;
-		int index = 0;
-		this.arr = new long[(int) (((digitLength+1)/Math.log10(this.base))+1)];
-		for(int i = digitLength-1;i>=0;i--){
-			this.arr[index++] = s.charAt(i)-'0';
-		}
-		Num tempConvertedBase = convertBase((int) defaultBase);
-		this.arr = tempConvertedBase.arr;
-		this.base = tempConvertedBase.base;
-		this.setNumLen();
-    }
-
-    public Num(long x) {
-		this.isNegative = x<0;
+	/**
+	 * This is a Constructor which takes a arbitrarily long number as a String
+	 * and converts it into Num object in the default base assumed.
+	 * @param s is the string of arbitrarily large number
+	 * */
+	public Num(String s) {
+		this.isNegative = s.charAt(0) == '-';
 		if(this.isNegative){
-			x = Math.abs(x);
+			s = s.substring(1);
 		}
-    	int d = 0;
-    	long x1 = x;
-    	while(x1>0){
-    		x1 = x1/defaultBase;
-    		d++;
-    	}
-    	this.arr = new long[(int) (((d+1)/Math.log10(this.base))+1)];
-    	//added by richa st
-    	int i = 0;
-    	while(x>0){
-    		this.arr[i] = x%this.base;
-    		x = x/this.base;
-    		i++;
-    	}
-    	this.setNumLen();
-    	//this.convertBase((int) this.base);
-    }
+		int length = s.length();
 
-    public static Num getSum(Num a,Num b,Num z) {
-		int lenMax ,lenMin;
-		long max[] = null;
-		max = (a.len > b.len)?a.arr:b.arr;
-		lenMax = (a.len > b.len)?a.len:b.len;
-		lenMin = (a.len > b.len)?b.len:a.len;
-
-		z.arr = new long[lenMax+1];
-		int i,carry=0;
-		for(i = 0;i<lenMin;i++){
-			z.arr[i] = a.arr[i] + b.arr[i] + carry;
-			if(z.arr[i]>=a.base){
-				carry = (int) (z.arr[i]/a.base);
-				z.arr[i] = z.arr[i]%a.base;
-			}
-			else
-				carry = 0;
+		int c = 0;
+		this.arr = new long[(int) (((length+1)/Math.log(this.base))+1)];
+		this.arr = new long[(int) (length)];
+		for(int i = length-1;i>=0;i--){
+			this.arr[c++] = s.charAt(i)-'0';
 		}
-		for(int j = i;j<lenMax;j++){
-			z.arr[j] = max[j] + carry;
-			if(z.arr[i]>=a.base){
-				carry = (int) (z.arr[i]/a.base);
-				z.arr[i] = z.arr[i]%a.base;
-			}
-			else
-				carry = 0;
-		}
-		if(carry > 0){
-			z.arr[i++] = carry;
-			carry = 0;
-		}
-		z.setNumLen();
-
-		return z;
+		this.base = 10;
+		this.len = c;
+		Num aa = fastConvertBase(s);
+		this.arr = aa.arr;
+		this.base = aa.base;
+		this.setNumLen();
 	}
 
+	/**
+	 * This is a Constructor which takes a long number
+	 * and converts it into Num object in the default
+	 * base assumed.
+	 * @param x is the long number number
+	 * */
+	public Num(long x) {
+		if(x==0){
+			this.arr= new long[1];
+			this.arr[0]=0;
+		}
+		else{
+			this.isNegative = x<0;
+			if(this.isNegative){
+				x = Math.abs(x);
+			}
+			int d = 0;
+			long temp = x;
+			while( temp > 0 ){
+				temp /= this.base;
+				d++;
+			}
+			this.arr = new long[d];
+			int i = 0;
+			while(x > 0){
+				this.arr[i++] = x % this.base;
+				x = x / this.base;
+			}
+		}
+		this.setNumLen();
+	}
+
+	/**
+	 * Empty constructor inorder to initialize an object of this class
+	 * */
+	public Num() { }
+
+	/**
+	 * This method is used to add 2 arbitrarily large numbers present in
+	 * the 2 objects that it takes as parameters and returns a Num object
+	 * with the sum.
+	 * @param a Num object containing the number to be added on the L.H.S of the addition
+	 * @param b Num object containing the number to be added on the R.H.S of the addition
+	 * @return a Num object with sum of both a and b
+	 * */
 	public static Num add(Num a, Num b) {
-		Num z = new Num();	//summ will be stored in this object
-		z.base = a.base;
-		if(a.isNegative && b.isNegative){
-			z.isNegative = true;
-			z = getSum(a,b,z);
+		boolean x=a.isNegative;
+		boolean y=b.isNegative;
+		Num z = new Num();
+		if( x && !y ){
+			a.isNegative = !a.isNegative;
+			z = subtract(b, a);
+			a.isNegative=x;
 			return z;
-		}else if(!a.isNegative && !b.isNegative){
-			z.isNegative = false;
-			z = getSum(a,b,z);
-			return z;
-		}else if(!a.isNegative && b.isNegative){
-			int comp = a.compareTo(b);
-			System.out.println("here adding +ve and -ve "+comp);
-			if(comp == 1){
-				z.isNegative = false;
-				z = getDifference(a,b,z,a.arr,b.arr);
-				return z;
-			}else if(comp == 0){
-				z = new Num((long)0);
-				z.isNegative =  false;
-				z.setNumLen();
-				return z;
-			}else{
-				z.isNegative = true;
-				z = getDifference(a,b,z,b.arr,a.arr);
-				return z;
-			}
-		}else{
-			int comp = a.compareTo(b);
-			System.out.println("here adding -ve and +ve "+comp);
-			if(comp == 1){
-				z.isNegative = true;
-				z = getDifference(a,b,z,a.arr,b.arr);
-				return z;
-			}else if(comp == 0){
-				z = new Num((long)0);
-				z.isNegative =  false;
-				z.setNumLen();
-				return z;
-			}else{
-				z.isNegative = false;
-				z = getDifference(a,b,z,b.arr,a.arr);
-				return z;
-			}
 		}
+		else if( !x && y ){
+			b.isNegative=!b.isNegative;
+			z=subtract(a, b);
+			b.isNegative=y;
+			return z;
+		}
+
+		z.isNegative = a.isNegative;
+		int lenMax ,lenMin,j;
+    	long max[] = null;
+    	if(a.len > b.len){
+    		max = a.arr;
+    		lenMax = a.len;
+    		lenMin = b.len;
+    	}
+    	else{
+    		max = b.arr;
+    		lenMax = b.len;
+    		lenMin = a.len;
+    	}
+    	z.arr = new long[lenMax+1];
+    	z.base=a.base;
+    	int i,carry=0;
+    	for(i = 0; i<lenMin; i++){
+    		z.arr[i] = a.arr[i] + b.arr[i] + carry;
+
+    		if(z.arr[i] >= a.base){
+    			carry = (int) (z.arr[i] / a.base);
+    			z.arr[i] = z.arr[i] % a.base;
+    		}
+    		else
+    			carry = 0;
+    	}
+
+    	for(j = i; j < lenMax; j++){
+    		z.arr[j] = max[j] + carry;
+    		if(z.arr[j] >= a.base){
+    			carry = (int) (z.arr[j] / a.base);
+    			z.arr[j] = z.arr[j] % a.base;
+    		}
+    		else
+    			carry = 0;
+    	}
+		if (carry != 0)
+			z.arr[j++] = carry;
+			z.len = j;
+		z.setNumLen();
+	return z;
     }
 
-    public static Num getDifference(Num a,Num b,Num z,long[] gt,long[] lt){
-		z.arr = new long[gt.length];
-		int i;
-		for(i=0;i<lt.length;i++){
-			z.arr[i] = gt[i] - lt[i];
-			if(z.arr[i]<0){
-				z.arr[i]+= z.base;
-				gt[i+1] = gt[i+1]-1;
-			}
-		}
-		for(int j=i+1;j<gt.length;j++)
-			z.arr[j] = gt[j];
-		z.setNumLen();
-		return z;
-	}
-
+	/**
+	 * This method is used to subtract 2 arbitrarily large numbers present in
+	 * the 2 objects that it takes as parameters and returns a Num object
+	 * with the difference.
+	 * @param a Num object containing the number to be subtracted on the L.H.S of the minus
+	 * @param b Num object containing the number to be subtracted on the R.H.S of the minus
+	 * @return a Num object with difference of a from b
+	 * */
     public static Num subtract(Num a, Num b) {
     	Num z = new Num();
+    	z.base=a.base;
+    	boolean x=a.isNegative;
+    	boolean y=b.isNegative;
+		int i;
 		long gt[] = null;
 		long lt[] = null;
-		int comp = a.compareTo(b);
-		System.out.println("signs are "+a.isNegative+" "+b.isNegative+" and comp is "+comp);
-		//	(a-b)
-		if(!a.isNegative && !b.isNegative){
-			//if a and b are positive
-			if(comp == 1){
-				// a > b and hence difference is +ve
-				gt = a.arr;
-				lt = b.arr;
-				z.isNegative = false;
-			}else if(comp == 0){
-				System.out.println("here as they are same");
-				z = new Num((long)0);
-				z.isNegative =  false;
-				z.setNumLen();
-				return z;
-			}else{
-				// a < b and hence difference is -ve
-				gt = b.arr;
-				lt = a.arr;
-				z.isNegative = true;
-			}
-		}else if(a.isNegative && b.isNegative){
-			// both a and b are negative
-			if(comp == 1){
-				// |a| > |b| and hence difference is -ve
-				gt = a.arr;
-				lt = b.arr;
-				z.isNegative = true;
-			}else if(comp == 0){
-				System.out.println("here as they are same and -ve");
-				z = new Num((long)0);
-				z.setNumLen();
-				z.isNegative =  false;
-				return z;
-			}else{
-				// |a| < |b| and hence difference is +ve
-				gt = b.arr;
-				lt = a.arr;
-				z.isNegative = false;
-			}
-		}else if(a.isNegative && !b.isNegative){
-			// since a is -ve and b is +ve the difference is -ve. i.e -(|a|+|b|)
-			//irrespective of a > b or b > a
-			z.isNegative = true;
-			z = getSum(a,b,z);
-			return z;
-		}else{
-			// since a is +ve and b is -ve the difference is +ve. i.e (a+b)
-			//irrespective of a > b or b > a
-			System.out.println("here is the +ve and -ve case");
-			z.isNegative = false;
-			z = getSum(a,b,z);
+		int gtLen = 0, ltlen = 0;
+
+		if( x != y ) {
+			b.isNegative = !b.isNegative;
+			z = add(a, b);
+			b.isNegative=y;
 			return z;
 		}
-		z = getDifference(a,b,z,gt,lt);
-		return z;
-//		if(comp == 1){
-//			gt = a.arr;
-//			lt = b.arr;
-//
-//			//if both numbers are -ve then the resulting difference will have sign of greater of the two
-//			z.isNegative = (a.isNegative && b.isNegative);
-////			if(a.isNegative && b.isNegative)
-////				z.isNegative = true;
-//		}else if(comp == -1){
-//			gt = b.arr;
-//			lt = a.arr;
-//
-//
-//			if(!a.isNegative && !b.isNegative)
-//				z.isNegative = true;
-//		}else{
-//			if((!a.isNegative && !b.isNegative) ||(a.isNegative && b.isNegative)){
-//				z = new Num((long)0);
-//				z.setNumLen();
-//				return z;
-//			}
-//		}
+		a.isNegative=false;
+		b.isNegative=false;
+		int comp = a.compareTo(b);
+		if(comp == 1){
+			gt = a.arr;
+			lt = b.arr;
+			z.isNegative = x;
+			gtLen = a.len;
+			ltlen = b.len;
+		}
+		else if(comp == -1){
+			gt = b.arr;
+			lt = a.arr;
+			z.isNegative = !y;
+			gtLen = b.len;
+			ltlen = a.len;
+		}
 
-//		if((a.isNegative && !b.isNegative )||( !a.isNegative && b.isNegative)){
-//			z = add(a, b);
-//			if(a.isNegative && !b.isNegative)
-//				z.isNegative = true;
-//			z.setNumLen();
-//			return z;
-//		}
+		else {
+			z = new Num(0);
+			z.isNegative = false;
+			z.setNumLen();
+			a.isNegative=x;
+			b.isNegative=y;
+			return z;
+		}
 
-    }
-
-    public static Num product(Num a, Num b) {
-    	Num z = new Num();
-    	z.base = a.base;
-    	z.arr = new long[a.arr.length + b.arr.length];
-    	int carry = 0;
-    	long val = 0;
-    	long bs = a.base;
-    	for(int i = 0; i<a.arr.length; i++){
-    		for(int j = 0; j<b.arr.length; j++){
-    			val =z.arr[j+i]+ (a.arr[i] * b.arr[j])+carry;
-    			if(val>=bs){
-        			carry = (int) (val/bs);
-        			val = val%bs;
-        		}
-        		else
-        			carry = 0;
-    			z.arr[j+i] = val;
+		z.arr= new long[Math.max(a.len+1,b.len+1)];
+    	for(i=0; i < ltlen; i++){
+    		z.arr[i] = gt[i] - lt[i];
+    		if(z.arr[i] < 0){
+    			z.arr[i]+= z.base;
+    			gt[i+1] -= 1;
     		}
     	}
+    	while(i < gtLen){
+				z.arr[i] = gt[i];
+				i++;
+		}
 		z.setNumLen();
+    	a.isNegative=x;
+		b.isNegative=y;
     	return z;
     }
 
-    // Use divide and conquer
-    public static Num power(Num a, long n) {
-    	
-    	Num temp = null;
-    	boolean negResult = false;
-    	if(n<0){
-    		temp = new Num((long)0);
-    		return temp;
-    	}
-    	
-    	if(a.isNegative && n%2!=0)
-    		negResult = true;
-    	
-    	if(n == 0){
-    		temp = new Num((long)1);
-    		if(negResult)
-    			temp.isNegative = true;
-    		return temp;
-    	}
-    	temp = power(a, n/2);
-    	if(n%2==0)
-    		return product(temp, temp);
-    	else
-    		return product(product (temp,temp),a);
-    	
+	/**
+	 * This method is used to multiply 2 arbitrarily large numbers present in
+	 * the 2 objects that it takes as parameters and returns a Num object
+	 * with the product.
+	 * @param a Num object containing the number to be multiplied on the L.H.S of the multiplication
+	 * @param b Num object containing the number to be multiplied on the R.H.S of the multiplication
+	 * @return a Num object with product of a and b
+	 * */
+    public static Num product(Num a, Num b) {
+		Num z = new Num();
+		int i,j;
+		if(a.isNegative == b.isNegative)
+			z.isNegative = false;
+		else
+			z.isNegative = true;
+		z.base = a.base;
+		z.arr = new long[a.len+b.len+1];
+		int carry = 0;
+		long val = 0;
+
+		for(i = 0; i < a.len; i++){
+			for(j = 0; j < b.len; j++){
+				val = z.arr[i+j]+ (a.arr[i] * b.arr[j])+carry;
+				if(val >= z.base){
+					carry = (int) (val/z.base);
+					val = val % z.base;
+				}
+				else
+					carry = 0;
+
+				z.arr[j+i] = val;
+			}
+			if(carry!=0){
+				z.arr[j+i] = carry;
+				carry=0;
+			}
+
+		}
+
+		z.setNumLen();
+		return z;
     }
 
-    // Use binary search to calculate a/b
+	/**
+	 * This method is used to calculate power of number to specific power using divide and
+	 * conquer algorithm and returns the answer as a Num object.
+	 * @param a Num object which will be raised to a power
+	 * @param n long number which is the power of the Num object to be calculated
+	 * @return a Num with a^n value
+	 * */
+	public static Num power(Num a, long n) {
+		Num z = new Num();
+		z.base = a.base;
+		if(a.isNegative && n%2!=0)
+			z.isNegative = true;
+		else
+			z.isNegative = false;
+		if(n < 0)
+			return new Num(0);
+		else if(n == 0)
+			return new Num((long)1);
+		if(n%2==0)
+			return product(power(a, n/2), power(a, n/2));
+		else
+			return product(product (power(a, n/2),power(a, n/2)),a);
+	}
+
+	/**
+	 * This method is used to divide 2 arbitrarily large numbers present in
+	 * the 2 objects that it takes as parameters using binary search and returns a Num object
+	 * with the quotient.
+	 * @param a Num object containing the number to be divided on the L.H.S of the division
+	 * @param b Num object containing the number to be divided on the R.H.S of the division
+	 * @return a Num object with quotient of a divided b
+	 * */
     public static Num divide(Num a, Num b) {
     	int comp = a.compareTo(b);
     	Num gt = null;
@@ -331,12 +332,14 @@ public class Num  implements Comparable<Num> {
     	}
     	else{
     		Num z = new Num();
-        	z.arr = new long[]{1};
+			z.arr = new long[]{1};
+			z.setNumLen();
         	return z;
     	}
     	Num z = new Num();
-    	Num high = new Num(10000);
-    	Num low = new Num (0);
+    	Num high = gt;
+    	Num low = lt;
+    	Num temp = new Num(0);
     	Num mid = add(high, low).by2();
     	Num prod = product(mid, lt);
     	int prodComp = prod.compareTo(gt);
@@ -345,301 +348,393 @@ public class Num  implements Comparable<Num> {
     			high = mid;
     		else if(prodComp==-1)
     			low = mid;
-    		else
-    			return mid;
+    		temp = mid;
     		mid = (add(high, low)).by2();
+    		if(temp.compareTo(mid) == 0)
+				return mid;
     		prod = product(mid, lt);
     		prodComp = prod.compareTo(gt);
     	}
 		mid.setNumLen();
 	return mid;
-    }
+	}
 
-    // return a%b
-    public static Num mod(Num a, Num b) {
-    	Num remainder = new Num();
-    	int comp = a.compareTo(b);
-    	Num gt = null;
-    	Num lt = null;
-    	if(comp == 1){
-    		gt = a;
-    		lt = b;
-    	}
-    	else if(comp == -1){
-    		gt = b;
-    		lt = a;
-    	} 
-    	remainder = subtract(gt, product(divide(gt, lt), lt));
-    	remainder.setNumLen();
-	return remainder;
-    }
-
-    // Use binary search
-    public static Num squareRoot(Num a) {
-    	Num high = a.by2();
-    	Num low = new Num (0);
-    	Num mid = add(high, low).by2();
-		Num squarednumber = power(mid, 2);
-		int compare = squarednumber.compareTo(a);
-		while(compare != 0){
-				if(compare > 1){
-					high = mid;
-				}
-				else if(compare < 1){
-					low = mid;
-				}
-				else
-					return mid;
-				mid = add(high, low).by2();
-				squarednumber = power(mid, 2);
-				compare = squarednumber.compareTo(a);
-			}
-			mid.setNumLen();
-	return mid;
-    }
-
-
-    // Utility functions
-    // compare "this" to "other": return +1 if this is greater, 0 if equal, -1 otherwise
-    public int compareTo(Num other) {
-    	int i = this.arr.length-1;
-    	if(this.arr.length > other.arr.length){
-    		boolean nonZero = false;
-    		for(int j = other.arr.length;j<this.arr.length;j++){
-    			if(this.arr[j]!=0){
-    				nonZero = true;
-    				return 1;
-    			}
-    		}
-    		if(!nonZero){
-    			i = other.arr.length-1;
-    		}
-    	}
-    	else if(this.arr.length < other.arr.length){
-    		boolean nonZero = false;
-    		for(int j = this.arr.length;j<other.arr.length;j++){
-    			if(other.arr[j]!=0){
-    				nonZero = true;
-    				return -1;
-    			}
-    		}
-    		if(!nonZero){
-    			i = this.arr.length-1;
-    		}
-    	}
-    	
-		long diff = 0;
-		while(i>=0){
-			diff = this.arr[i] - other.arr[i];
-			if(diff>0){
-				return 1;
-			}
-			else if(diff<0){
-				return -1;
-			}
-			i--;
+	/**
+	 * This method is used to calculate modulus of 2 arbitrarily large numbers present in
+	 * the 2 objects that it takes as parameters and returns a Num object
+	 * with the modulus.
+	 * @param a Num object containing the number on the L.H.S of the modulus
+	 * @param b Num object containing the number on the R.H.S of the modulus
+	 * @return a Num object a modulus b
+	 * */
+	public static Num mod(Num a, Num b) {
+		Num remainder = new Num();
+		int comp = a.compareTo(b);
+		if(comp == -1){
+			return a;
 		}
-		
+		else if(comp == 0){
+			return new Num(0);
+		}
+		remainder = subtract(a, product(divide(a, b), b));
+		remainder.setNumLen();
+		return remainder;
+	}
+
+	/**
+	 * This method is used to calculate the square root of a number that it accepts as a parameter
+	 * using binary search and returns a Num object with the square root value
+	 * @param a Num object whose square root has to be calculated
+	 * @return a Num object with square root of Num object a
+	 * */
+    public static Num squareRoot(Num a) {
+    	if(a.isNegative == true) {
+		throw new ArithmeticException("cannot find squareroot of negative numbers");
+		}
+		else {
+			Num high = a;
+			Num low = new Num (0);
+			Num mid = add(add(high, low).by2(), new Num (1));
+			Num temp = new Num(0);
+			Num squarednumber = power(mid, 2);
+			int compare = squarednumber.compareTo(a);
+			while(compare != 0){
+					if(compare == 1){
+						high = mid;
+					}
+					else if(compare == -1){
+						low = mid;
+					}
+					temp = mid;
+					mid = add(high, low).by2();
+					if(temp.compareTo(mid) == 0)
+						return mid;
+					squarednumber = power(mid, 2);
+					compare = squarednumber.compareTo(a);
+				}
+				mid.setNumLen();
+				return mid;
+		}
+    }
+
+
+	/**
+	 * this function is used to compare the values of 2 Num objects where it takes 1 object other
+	 * as a parameter and references this to the implicit object calling this method and returns +1
+	 * if this is greater, 0 if equal, -1 otherwise.
+	 * @param other Num object which is compared to this implicit object calling this method
+	 * @return  +1 if this is greater, 0 if equal, -1 otherwise
+	 * */
+    public int compareTo(Num other) {
+		if(this.isNegative != other.isNegative)
+		{
+			if(this.isNegative == true)
+				return -1;
+			else
+				return  1;
+		}
+		else
+		{
+			if(this.len > other.len)
+			{
+				if(this.isNegative == true)
+					return -1;
+				else
+					return 1;
+			}
+			else if(this.len < other.len)
+			{
+				if(this.isNegative == true)
+					return 1;
+				else
+					return -1;
+			}
+			for(int i = this.len-1; i >= 0; i--)
+			{
+				if(this.arr[i] > other.arr[i])
+					return 1;
+				else if(this.arr[i] < other.arr[i])
+					return -1;
+			}
+		}
 		return 0;
     }
-    
-    // Output using the format "base: elements of list ..."
-    // For example, if base=100, and the number stored corresponds to 10965,
-    // then the output is "100: 65 9 1"
+
+	/**
+	 * This method is used to print the elements of the list in the Num object int the
+	 * following pattern "base: elements of list ..."
+	 * eg : "100: 65 9 1" for a number 10965 in base 100
+	 * */
     public void printList() {
-		System.out.print(this.base+":");
+    	System.out.print(this.base+":");
     	if(this.isNegative)
         	System.out.print(" -");
-
-    	for(int i = 0; i<this.len;i++)
+    	for(int i=0; i < this.len; i++){
     		System.out.print(" "+this.arr[i]);
+    	}
     	System.out.println("");
     }
-    
-    // Return number to a string in base 10
-    public String toString() {
-    	Num base10Num = this.convertBase(10);
-    	String str = "";
-    	if(this.isNegative){
-			str+="-";
+
+	/**
+	 * This method is used to convert the Num object to String in base 10
+	 * @return a String of number in base 10
+	 * */
+	public String toString() {
+		if(this.base == defaultBase){
+			return fastConvertBase10(this);
 		}
-    	for(int i=base10Num.len-1; i>=0; i--){
-			str += base10Num.arr[i];
-		}
-		base10Num.len = str.length();
-    	if(str.length() == 0){
-			System.out.println(str.length());
-		}else{
-			System.out.println(str);
-		}
-    	return str;
-    }
+		StringBuilder sb = new StringBuilder();
+		Num s=this.convertBase(10);
+		if(s.isNegative)
+			sb.append('-');
+		for(int i=s.len-1; i>=0; i--)
+			sb.append(s.arr[i]);
+		s.len=sb.length();
+		return sb.toString();
+	}
 
     public long base() { return base; }
 
-    public Num convertBase(int base){
-    	
-    	Num exbase = convertDigit(this.base,base);
-    	exbase.setNumLen();
-    	Num newNum = new Num(0);
-    	newNum.base = base;
-    	newNum.isNegative=this.isNegative;
-    	Num convDig = new Num();
-    	for(int i = this.arr.length-1; i>=0;i--){
-    		newNum = product(newNum, exbase);
-    		convDig = convertDigit(this.arr[i],base);
-    		newNum = add(newNum,convDig);
-    	}
-    	return newNum;
-    }
-    
-    public Num convertDigit(long oldbase,int newBase) {
-    	Num bs = new Num();
-    	int d = 0;
-    	bs.base = newBase;
-    	long x = oldbase;
-    	long x1 = x;
-    	while(x1>0){
-    		x1 = x1/10;
-    		d++;
-    	}
-    	bs.arr = new long[(int) (((d+1)/Math.log10(newBase))+1)];
-    	int i = 0;
-    	while(x>0){
-    		bs.arr[i] = x%newBase;
-    		i++;
-    		x = x/newBase;
-    	}
-    	bs.setNumLen();
-    	return bs;
-    }
-    
-    // Divide by 2, for using in binary search
+    /**
+	 * This method is used to quickly convert the Num object to base 10 if and only
+	 * if the Num object is in the default base.
+	 * @param num Num object in default base
+	 * @return a String of number in base 10
+	 * */
+	public static String fastConvertBase10(Num num){
+		StringBuilder sb = new StringBuilder();
+		if(num.isNegative){
+			sb.append('-');
+		}
+		for(int i=num.len-1;i>=0;i--){
+			if(i == num.len-1){
+				sb.append(num.arr[i]);
+			}else{
+				sb.append(String.format("%"+String.valueOf(log10DefaultBase)+"s",String.valueOf(num.arr[i])).replace(' ','0'));
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * This method is used to quickly convert the String of arbitrary long number to defaultbase
+	 * @param s String of arbitrary long number
+	 * @return a Num object with Number in default base
+	 * */
+    public static Num fastConvertBase(String s){
+		Num tempNum = new Num();
+		int strLength = s.length();
+		int k = 0;
+		tempNum.base = defaultBase;
+		tempNum.arr = new long[(s.length()/log10DefaultBase)+1];
+
+		while(strLength >=log10DefaultBase){
+			tempNum.arr[k] = Long.parseLong(s.substring(strLength-log10DefaultBase,strLength));
+			strLength = strLength-log10DefaultBase;
+			k++;
+		}
+		if (strLength>0)
+			tempNum.arr[k] = Long.parseLong(s.substring(0, strLength));
+		return tempNum;
+	}
+
+	/**
+	 * This method is used to convert Num object from current base to specified base that is
+	 * taken as a parameter using Hornors method
+	 * @param base the base integer to be converted
+	 * @return a Num object with specified number as base
+	 * */
+	public Num convertBase(int base){
+		Num exbase = convertDigit(this.base,base);
+		exbase.setNumLen();
+		Num newNum = new Num(0);
+		newNum.base = base;
+		Num convDigByDig = new Num();
+		for(int i = this.len-1; i>=0;i--){
+			newNum = product(newNum, exbase);
+			convDigByDig = convertDigit(this.arr[i],base);
+			newNum = add(newNum,convDigByDig);
+		}
+		newNum.isNegative =this.isNegative;
+
+		return newNum;
+	}
+
+
+	/**
+	 * This method is used to convert a number into the newBase using the primary base conversion method
+	 * using the modulus
+	 * taken as a parameter using Hornors method
+	 * @param val the number to be converted into new base
+	 * @param newBase the base number
+	 * @return a Num object with newBase number as the new base
+	 * */
+	public Num convertDigit(long val,int newBase) {
+		Num newVal = new Num();
+		int d = 0;
+		newVal.base = newBase;
+		long temp = val;
+		long x1 = temp;
+		while(x1 > 0){
+			x1 /= 10;
+			d++;
+		}
+		//newVal.arr = new long[(int) (d+1)/(Math.log10(newBase)+1)];
+		newVal.arr = new long[d];
+		int i = 0;
+		while(temp > 0){
+			newVal.arr[i] = temp % newBase;
+			i++;
+			temp = temp/newBase;
+		}
+		newVal.setNumLen();
+		return newVal;
+	}
+
+	/**
+	 * This method is used to divide the number by 2 using Binary search
+	 * @return Num with value divided by 2
+	 * */
     public Num by2() {
-    	int i=this.arr.length-1;
-    	long v = 0,rem = 0;
+    	int i=this.len-1;
+    	long v = 0, rem = 0;
     	Num z = new Num();
-    	z.arr = new long[this.arr.length];
-    	while(i>=0){
+    	z.arr = new long[this.len];
+    	while(i >= 0){
     		v = this.arr[i];
     		if(rem == 1)
-    			v = base + v;
-    		z.arr[i] = v/2;
+    			v += base;
+    		z.arr[i--] = v/2;
     		rem = v%2;
-    		i--;
     	}
-    	z.setNumLen();
+		z.setNumLen();
 	return z;
     }
 
-    // Evaluate an expression in postfix and return resulting number
-    // Each string is one of: "*", "+", "-", "/", "%", "^", "0", or
-    // a number: [1-9][0-9]*.  There is no unary minus operator.
+	/**
+	 * This method is used to evaluate a postfix expression and return the resulting number
+	 * as a Num Object
+	 * @param expr array of String containing the postfix expression
+	 * @return Num with value of evaluated postfix expression
+	 * */
     public static Num evaluatePostfix(String[] expr) {
-    	Stack<Num> st = new Stack<Num>();
-    	
-    	HashSet<String> optr = new HashSet<String>();
-    	optr.add("^");
-    	optr.add("*");
-    	optr.add("/");
-    	optr.add("%");
-    	optr.add("+");
-    	optr.add("-");
-    	
-    	for(int i = 0; i<expr.length; i++){
-    		if(!optr.contains(expr[i]))
-    			st.push(new Num(expr[i]));
-    		else{
-    			st.push(eval(st.pop(),st.pop(),expr[i]));
-    		}
-    	}
-    	
-    	return st.pop();
-    }
-    
-    public static Num eval(Num a, Num b, String x){
-    	Num z = null;
-    	switch(x){
-	    	case "+" : z = add(a,b);
-	    		break;
-	    	case "-" : z = subtract(a, b);
-	    		break;
-	    	case "*" : z = product(a, b);
-	    		break;
-	    	case "/" : z = divide(a, b);
-	    		break;
-	    	case "%" : z = mod(a, b);
-	    		break;
-    	}
-    	return z;
-    }
+		Stack<Num> st = new Stack<Num>();
 
-    // Evaluate an expression in infix and return resulting number
-    // Each string is one of: "*", "+", "-", "/", "%", "^", "(", ")", "0", or
-    // a number: [1-9][0-9]*.  There is no unary minus operator.
-    public static Num evaluateInfix(String[] expr) {
-    	Num postfixsolution = new Num();
-    	String postfixstring = new String("");
-    	String[] postfixarrayoutput;
-    	HashMap<String, Integer> priority = new HashMap<String, Integer>();
-    	priority.put("+", 1);
-    	priority.put("-", 1);
-    	priority.put("/", 2);
-    	priority.put("*", 2);
-    	priority.put("^", 3);
-    	
-    	Stack<Character> stack = new Stack<>();
-    	
-    	for(int i = 0; i < expr.length; i++){
-    		String val = expr[i];
-    		char charval = val.charAt(0);
-    		if(Character.isLetter(charval))
-    		{
-    			postfixstring += charval;
-    		}
-    		else if(charval == '('){
-    			stack.push(charval);
-    		}
-    		else if(charval == ')'){
-    			while(! stack.isEmpty() && stack.peek()!= '('){
-    				postfixstring += stack.pop();
-    			}
-    			stack.pop();
-    		}
-    		else 
-    		{
-    			while(!stack.isEmpty() && priority.get(charval) <= priority.get(stack.peek()) ){
-    				postfixstring += stack.pop();
-    			}
-    			stack.push(charval);
-    		}
-    	}
-    	
-    	while(!stack.isEmpty()){
-    		postfixstring += stack.pop();
-    	}
-    	postfixarrayoutput = postfixstring.split("");
-    	postfixsolution = evaluatePostfix(postfixarrayoutput);
-	return postfixsolution;
+		HashSet<String> optr = new HashSet<String>();
+		optr.add("^");
+		optr.add("*");
+		optr.add("/");
+		optr.add("%");
+		optr.add("+");
+		optr.add("-");
+
+		for(int i = 0; i<expr.length; i++){
+			if(!optr.contains(expr[i]))
+				st.push(new Num(expr[i]));
+			else{
+				st.push(eval(st.pop(),st.pop(),expr[i]));
+			}
+		}
+
+		return st.pop();
+	}
+
+	/**
+	 * This method is used as a helper method for evaluate Postfix expression to call the
+	 * proper operations on two Num objects and return the values as string
+	 * @param a Num object present in the operation
+	 * @param b Num object present in the operation
+	 * @param x Helps in deciding which operation to choose
+	 * @return Num object with evaluated numeric operations
+	 * */
+	public static Num eval(Num a, Num b, String x){
+		Num z = null;
+		switch(x){
+			case "+" : z = add(a,b);
+				break;
+			case "-" : z = subtract(b, a);
+				break;
+			case "*" : z = product(a, b);
+				break;
+			case "/" : z = divide(a, b);
+				break;
+			case "%" : z = mod(a, b);
+				break;
+		}
+		return z;
     }
 
+	/**
+	 * This method is used to evaluate a Infix expression and return the resulting number
+	 * as a Num Object
+	 * @param expr array of String containing the Infix expression
+	 * @return Num with value of evaluated Infix expression
+	 * */
+	public static Num evaluateInfix(String[] expr) {
+		Num postfixsolution = new Num();
+		String postfixstring = new String("");
+		String[] postfixarrayoutput;
+		HashMap<String, Integer> priority = new HashMap<String, Integer>();
+		priority.put("+", 1);
+		priority.put("-", 1);
+		priority.put("/", 2);
+		priority.put("*", 2);
+		priority.put("^", 3);
+		priority.put("(", 0);
+		priority.put(")", 0);
 
-    public static void main(String[] args) {
-//	Num x = new Num("999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999");
-//	x.printList();
-//	Num y = new Num("222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222");
-//	y.printList();
-//	subtract(x,y).toString();
+		Stack<String> stack = new Stack<>();
+		for(int i = 0; i < expr.length; i++){
+			String val = expr[i];
+			if(!priority.containsKey(val))
+			{
+				postfixstring += val + " ";
+			}
+			else if(val == "("){
+				stack.push(val);
+			}
+			else if(val == ")"){
+				while(! stack.isEmpty() && stack.peek()!= "("){
+					postfixstring += stack.pop() + " ";
+				}
+				if (!stack.isEmpty() && stack.peek() != "(")
+					return null;
+				else
+					stack.pop();
+			}
+			else
+			{
+				while(!stack.isEmpty() && priority.get(val) <= priority.get(stack.peek()) )
+					postfixstring += stack.pop() + " ";
+				stack.push(val);
+			}
+		}
 
-		Num x = new Num("-999999999");
+		while(!stack.isEmpty()){
+			postfixstring += stack.pop() + " ";
+		}
+		postfixarrayoutput = postfixstring.split(" ");
+		postfixsolution = evaluatePostfix(postfixarrayoutput);
+		return postfixsolution;
+	}
+
+
+	public static void main(String[] args) {
+		Num x = new Num("12345678999");
 		x.printList();
-		Num z = new Num("222222222");
-		z.printList();
-		add(x,z).toString();
-//	Num z1 = z.convertBase(10);
-//	System.out.println("Print tostring");
-//	z1.toString();
-//	System.out.println("Printlist");
-//	z1.printList();
-    }
+		Num y = new Num("12345678999");
+		y.printList();
+		add(x,y).printList();
+		add(x,y).toString();
+	}
+
+
 }
+
+
+/*
+	Sample Input :
+	//Evaluate Postfix expo : ["13", "12", "*", "48", "3", "/", "-", "66", "+"]
+	Output:
+	206
+*/

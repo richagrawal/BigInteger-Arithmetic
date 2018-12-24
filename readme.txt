@@ -1,12 +1,3 @@
-/**
- * @authors
- *
- * RichaAgrawal (netId : rxa170033)
- * Shruti Jaiswal (netId : sxj170027)
- * Vikram Gopali (netId : vxg180002_1)
- * Vishwanath D.C (netId : vxd180004)
- * */
-
 
 Compiling the code in IntelliJ Idea:
 ->create a empty project.

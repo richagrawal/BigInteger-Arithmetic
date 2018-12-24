@@ -2,17 +2,6 @@
 // Starter code for lp1.
 // Version 1.0 (8:00 PM, Wed, Sep 5).
 
-package vxg180002;
-
-/**
- * @authors
- *
- * RichaAgrawal (netId : rxa170033)
- * Shruti Jaiswal (netId : sxj170027)
- * Vikram Gopali (netId : vxg180002)
- * Vishwanath D.C (netId : vxd180004)
- * */
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
